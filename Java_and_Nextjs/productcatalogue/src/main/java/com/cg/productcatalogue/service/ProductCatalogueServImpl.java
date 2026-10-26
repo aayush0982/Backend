@@ -11,10 +11,14 @@ import com.cg.productcatalogue.modal.Category;
 import com.cg.productcatalogue.modal.Product;
 import com.cg.productcatalogue.modal.ProductInventory;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Service
 public class ProductCatalogueServImpl implements ProductCatalogueService {
 
         private final RestTemplate restTemplate;
+        private static final Logger logger = LoggerFactory.getLogger(ProductCatalogueServImpl.class);
 
         public ProductCatalogueServImpl(RestTemplate restTemplate) {
                 this.restTemplate = restTemplate;
@@ -22,6 +26,7 @@ public class ProductCatalogueServImpl implements ProductCatalogueService {
 
         @Override
         public String addProduct(ProductCatalogue productCatalogue) {
+                logger.info("Adding product to catalogue. productId={}", productCatalogue.getProductId());
                 Product Product = new Product();
                 Product.setProductId(productCatalogue.getProductId());
                 Product.setProductName(productCatalogue.getProductName());
@@ -77,13 +82,14 @@ public class ProductCatalogueServImpl implements ProductCatalogueService {
                                 null,
                                 String.class);
 
+                logger.info("Product added successfully. productId={}", productCatalogue.getProductId());
                 return "Product added successfully";
 
         }
 
-
         @Override
         public List<ProductCatalogue> getAllProducts() {
+                logger.info("Fetching all products for catalogue");
 
                 String productUrl = "http://localhost:8085/products/getAll";
 
@@ -125,11 +131,13 @@ public class ProductCatalogueServImpl implements ProductCatalogueService {
                         }
                 }
 
+                logger.info("Finished fetching catalogue products. count={}", result.size());
                 return result;
         }
 
         @Override
         public List<ProductCatalogue> getProductByCategory(String categoryName) {
+                logger.info("Fetching products by category. categoryName={}", categoryName);
 
                 String categoryUrl = "http://localhost:8086/category/productsCategoryWise"
                                 + "?categoryName=" + categoryName;
@@ -165,6 +173,8 @@ public class ProductCatalogueServImpl implements ProductCatalogueService {
                         }
                 }
 
+                logger.info("Finished fetching products by category. categoryName={}, count={}", categoryName,
+                                result.size());
                 return result;
         }
 
@@ -172,6 +182,7 @@ public class ProductCatalogueServImpl implements ProductCatalogueService {
         public List<ProductCatalogue> getProductByRange(
                         double minPrice,
                         double maxPrice) {
+                logger.info("Fetching products by price range. minPrice={}, maxPrice={}", minPrice, maxPrice);
 
                 String productUrl = "http://localhost:8085/products/getByPriceBetween"
                                 + "?minPrice=" + minPrice
@@ -217,11 +228,13 @@ public class ProductCatalogueServImpl implements ProductCatalogueService {
                         }
                 }
 
+                logger.info("Finished fetching products by price range. count={}", result.size());
                 return result;
         }
 
         @Override
         public ProductCatalogue getProductByName(String productName) {
+                logger.info("Fetching product by name. productName={}", productName);
 
                 String productUrl = "http://localhost:8085/products/getAll";
 
@@ -267,16 +280,20 @@ public class ProductCatalogueServImpl implements ProductCatalogueService {
 
                                         catalogue.setProductQuantity(quantity);
 
+                                        logger.info("Product found by name. productName={}, productId={}",
+                                                        productName, product.getProductId());
                                         return catalogue;
                                 }
                         }
                 }
 
+                logger.warn("Product not found by name. productName={}", productName);
                 return null;
         }
 
         @Override
         public ProductCatalogue getProductById(int productId) {
+                logger.info("Fetching product by ID. productId={}", productId);
 
                 String productUrl = "http://localhost:8085/products/getById"
                                 + "?productId=" + productId;
@@ -286,6 +303,7 @@ public class ProductCatalogueServImpl implements ProductCatalogueService {
                                 Product.class);
 
                 if (product == null) {
+                        logger.warn("Product not found by ID. productId={}", productId);
                         return null;
                 }
 
@@ -320,10 +338,12 @@ public class ProductCatalogueServImpl implements ProductCatalogueService {
 
                 catalogue.setProductQuantity(quantity);
 
+                logger.info("Product fetched successfully. productId={}", productId);
                 return catalogue;
         }
 
         public String deleteProduct(Integer productId) {
+                logger.info("Deleting product from catalogue. productId={}", productId);
 
                 // 1. Get category of product
                 String categoryUrl = "http://localhost:8086/category/getCategoryByProductId"
@@ -358,6 +378,7 @@ public class ProductCatalogueServImpl implements ProductCatalogueService {
 
                 restTemplate.delete(productUrl);
 
+                logger.info("Product deleted successfully. productId={}", productId);
                 return "Product deleted successfully";
         }
 
