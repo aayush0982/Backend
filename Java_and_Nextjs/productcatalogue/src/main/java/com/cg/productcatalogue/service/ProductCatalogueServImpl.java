@@ -3,6 +3,9 @@ package com.cg.productcatalogue.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -25,6 +28,8 @@ public class ProductCatalogueServImpl implements ProductCatalogueService {
         }
 
         @Override
+        @CacheEvict(cacheNames = { "allProducts", "productById",
+                        "productByName" }, allEntries = true, beforeInvocation = true)
         public String addProduct(ProductCatalogue productCatalogue) {
                 logger.info("Adding product to catalogue. productId={}", productCatalogue.getProductId());
                 Product Product = new Product();
@@ -88,6 +93,7 @@ public class ProductCatalogueServImpl implements ProductCatalogueService {
         }
 
         @Override
+        @Cacheable(cacheNames = "allProducts")
         public List<ProductCatalogue> getAllProducts() {
                 logger.info("Fetching all products for catalogue");
 
@@ -233,6 +239,7 @@ public class ProductCatalogueServImpl implements ProductCatalogueService {
         }
 
         @Override
+        @Cacheable(cacheNames = "productByName", key = "#productName.toLowerCase()")
         public ProductCatalogue getProductByName(String productName) {
                 logger.info("Fetching product by name. productName={}", productName);
 
@@ -292,6 +299,7 @@ public class ProductCatalogueServImpl implements ProductCatalogueService {
         }
 
         @Override
+        @Cacheable(cacheNames = "productById", key = "#productId")
         public ProductCatalogue getProductById(int productId) {
                 logger.info("Fetching product by ID. productId={}", productId);
 
@@ -342,6 +350,8 @@ public class ProductCatalogueServImpl implements ProductCatalogueService {
                 return catalogue;
         }
 
+        @CacheEvict(cacheNames = { "allProducts", "productById",
+                        "productByName" }, allEntries = true, beforeInvocation = true)
         public String deleteProduct(Integer productId) {
                 logger.info("Deleting product from catalogue. productId={}", productId);
 
